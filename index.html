@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Prestaciones Laborales - El Salvador</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Calculadora de Prestaciones Laborales</h1>
+    <p>Liquidación de fin de contrato y recargos por jornadas especiales · El Salvador</p>
+  </header>
+
+  <main>
+    <form id="formulario" novalidate>
+
+      <fieldset>
+        <legend>1. Datos financieros y antigüedad</legend>
+
+        <label for="ingreso">Ingreso mensual (USD)</label>
+        <input type="number" id="ingreso" min="0" step="0.01" placeholder="Ej: 600.00" required>
+
+        <div class="fila">
+          <div>
+            <label for="anios">Años laborados</label>
+            <input type="number" id="anios" min="0" step="1" placeholder="Ej: 6" required>
+          </div>
+          <div>
+            <label for="meses">Meses laborados (0 a 11)</label>
+            <input type="number" id="meses" min="0" max="11" step="1" placeholder="Ej: 9" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. Causa de finalización de la relación laboral</legend>
+
+        <label for="tipoCierre">Tipo de cierre</label>
+        <select id="tipoCierre" required>
+          <option value="">-- Selecciona una opción --</option>
+          <option value="despido">Despido injustificado</option>
+          <option value="renuncia">Renuncia voluntaria</option>
+        </select>
+      </fieldset>
+
+      <fieldset>
+        <legend>3. Jornadas extraordinarias y días especiales</legend>
+
+        <label class="check">
+          <input type="checkbox" id="noAplica">
+          No aplica (no trabajé horas extras ni días especiales)
+        </label>
+
+        <div id="camposExtras">
+          <div class="fila">
+            <div>
+              <label for="hExtraDiurnas">Horas extras diurnas</label>
+              <input type="number" id="hExtraDiurnas" min="0" step="0.5" value="0">
+            </div>
+            <div>
+              <label for="hExtraNocturnas">Horas extras nocturnas (7:00 p.m. a 6:00 a.m.)</label>
+              <input type="number" id="hExtraNocturnas" min="0" step="0.5" value="0">
+            </div>
+          </div>
+          <div class="fila">
+            <div>
+              <label for="diasAsueto">Días de asueto laborados</label>
+              <input type="number" id="diasAsueto" min="0" step="1" value="0">
+            </div>
+            <div>
+              <label for="diasDescanso">Días de descanso semanal laborados</label>
+              <input type="number" id="diasDescanso" min="0" step="1" value="0">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <div id="mensajeError" class="error" hidden></div>
+
+      <div class="botones">
+        <button type="submit" id="btnCalcular">Calcular liquidación</button>
+        <button type="button" id="btnLimpiar" class="secundario">Limpiar</button>
+      </div>
+    </form>
+
+    <section id="resultados" hidden>
+      <h2>Desglose de la liquidación</h2>
+      <table>
+        <tbody>
+          <tr><td>Vacación proporcional acumulada</td><td id="rVacacion">$0.00</td></tr>
+          <tr><td>Aguinaldo proporcional acumulado</td><td id="rAguinaldo">$0.00</td></tr>
+          <tr><td id="etiquetaIndem">Indemnización / compensación económica</td><td id="rIndem">$0.00</td></tr>
+          <tr><td>Subtotal horas extras diurnas</td><td id="rHED">$0.00</td></tr>
+          <tr><td>Subtotal horas extras nocturnas</td><td id="rHEN">$0.00</td></tr>
+          <tr><td>Días de asueto laborados</td><td id="rAsueto">$0.00</td></tr>
+          <tr><td>Días de descanso semanal laborados</td><td id="rDescanso">$0.00</td></tr>
+          <tr class="total"><td>TOTAL DE LA LIQUIDACIÓN</td><td id="rTotal">$0.00</td></tr>
+        </tbody>
+      </table>
+      <p id="nota" class="nota"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Cálculo referencial basado en el Código de Trabajo de El Salvador y la Ley Reguladora de la Prestación Económica por Renuncia Voluntaria.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
