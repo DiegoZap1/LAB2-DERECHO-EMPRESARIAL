@@ -21,11 +21,11 @@
         <div class="fila">
           <div>
             <label for="nombreEmpleado">Nombre del empleado</label>
-            <input type="text" id="nombreEmpleado" placeholder="Ej: Roberto Herrera" required>
+            <input type="text" id="nombreEmpleado" placeholder="Ej: Roberto Herrera">
           </div>
           <div>
             <label for="nombreEmpresa">Nombre de la empresa</label>
-            <input type="text" id="nombreEmpresa" placeholder="Ej: Orion Software" required>
+            <input type="text" id="nombreEmpresa" placeholder="Ej: Orion Software">
           </div>
         </div>
 
@@ -34,14 +34,15 @@
 
         <div class="fila">
           <div>
-            <label for="anios">Años laborados</label>
-            <input type="number" id="anios" min="0" step="1" placeholder="Ej: 6" required>
+            <label for="fechaIngreso">Fecha de ingreso</label>
+            <input type="date" id="fechaIngreso" required>
           </div>
           <div>
-            <label for="meses">Meses laborados (0 a 11)</label>
-            <input type="number" id="meses" min="0" max="11" step="1" placeholder="Ej: 9" required>
+            <label for="fechaFin">Último día laborado</label>
+            <input type="date" id="fechaFin" required>
           </div>
         </div>
+        <p class="ayuda">La antigüedad se calcula con las fechas exactas (mes comercial de 30 días, el último día laborado cuenta).</p>
       </fieldset>
 
       <fieldset>
@@ -97,6 +98,12 @@
 
     <section id="resultados" hidden>
       <h2>Desglose de la liquidación</h2>
+      <div class="resumen">
+        <p><strong>Empleado:</strong> <span id="rEmpleado"></span></p>
+        <p><strong>Empresa:</strong> <span id="rEmpresa"></span></p>
+        <p><strong>Período:</strong> <span id="rPeriodo"></span></p>
+        <p><strong>Antigüedad:</strong> <span id="rAntiguedad"></span></p>
+      </div>
       <table>
         <tbody>
           <tr><td>Vacación proporcional acumulada</td><td id="rVacacion">$0.00</td></tr>

@@ -36,28 +36,6 @@ function formatoFecha(f) {
   return f.toLocaleDateString("es-SV", { day: "2-digit", month: "long", year: "numeric" });
 }
 
-// ---------- Antigüedad automática ----------
-function actualizarAntiguedad() {
-  const vi = $("fechaIngreso").value;
-  const vf = $("fechaFin").value;
-  if (!vi || !vf) {
-    ["anios", "meses", "dias"].forEach((id) => ($(id).value = ""));
-    return;
-  }
-  const ini = parseFecha(vi);
-  const fin = parseFecha(vf);
-  if (fin < ini) {
-    ["anios", "meses", "dias"].forEach((id) => ($(id).value = ""));
-    return;
-  }
-  const dif = diferencia(ini, finExclusivo(fin));
-  $("anios").value = dif.anios;
-  $("meses").value = dif.meses;
-  $("dias").value = dif.dias;
-}
-$("fechaIngreso").addEventListener("change", actualizarAntiguedad);
-$("fechaFin").addEventListener("change", actualizarAntiguedad);
-
 // "No aplica" deshabilita y pone en 0 los campos de jornadas especiales
 $("noAplica").addEventListener("change", () => {
   const ids = ["hExtraDiurnas", "hExtraNocturnas", "diasAsueto", "diasDescanso"];
@@ -100,8 +78,6 @@ function calcular() {
   const descansos = parseFloat($("diasDescanso").value) || 0;
 
   // ---- Validaciones ----
-  if (!empleado) return mostrarError("Escribe el nombre del empleado.");
-  if (!empresa) return mostrarError("Escribe el nombre de la empresa.");
   if (isNaN(sbm) || sbm <= 0) return mostrarError("Escribe un ingreso mensual mayor a cero.");
   if (!$("fechaIngreso").value) return mostrarError("Selecciona la fecha de ingreso.");
   if (!$("fechaFin").value) return mostrarError("Selecciona el último día laborado.");
@@ -115,7 +91,7 @@ function calcular() {
   if ([hed, hen, asuetos, descansos].some((v) => v < 0))
     return mostrarError("Las jornadas especiales no pueden ser negativas.");
 
-  // ---- Antigüedad exacta ----
+  // ---- Antigüedad exacta a partir de las fechas ----
   const finExcl = finExclusivo(finFecha);
   const ant = diferencia(ingresoFecha, finExcl);
   const anios = ant.anios;
