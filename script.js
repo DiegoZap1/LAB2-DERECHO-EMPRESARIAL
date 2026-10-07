@@ -656,43 +656,98 @@ function exportarAExcel() {
     return;
   }
 
-  const empleado = $("rEmpleado").textContent;
-  const empresa = $("rEmpresa").textContent;
-  const periodo = $("rPeriodo").textContent;
-  const antiguedad = $("rAntiguedad").textContent;
+  if (!ultimoCalculo) {
+    alert("Primero calcula la liquidación para poder exportar a Excel.");
+    return;
+  }
 
-  // Extraer las filas de la tabla de resultados
-  const filasTabla = document.querySelectorAll("#resultados table tbody tr");
+  const d = ultimoCalculo;
+  const c = d.conceptos;
+  const esDespido = d.tipo === "despido";
+  const baseIndem = esDespido
+    ? "Art. 58 CT"
+    : "Ley Reguladora de la Prestación Económica por Renuncia Voluntaria";
+  const totalDeducciones = redondear(d.descuentoISSS + d.descuentoAFP + d.descuentoISR);
+  const exento = c.indemnizacion + (d.aguinaldoGravado ? 0 : c.aguinaldo);
+  const textoExento = d.aguinaldoGravado ? "indemnización" : "indemnización y aguinaldo";
+
   const datosExcel = [
-    ["LIQUIDACIÓN Y PRESTACIONES LABORALES - EL SALVADOR"],
+    ["COMPROBANTE DE LIQUIDACIÓN DE PRESTACIONES LABORALES"],
+    ["República de El Salvador"],
     [""],
-    ["Empleado:", empleado],
-    ["Empresa:", empresa],
-    ["Período laborado:", periodo],
-    ["Antigüedad:", antiguedad],
+    ["I. DATOS DE LAS PARTES Y DE LA RELACIÓN LABORAL"],
+    ["Persona trabajadora:", d.empleado.toUpperCase(), "Patrono:", d.empresa],
+    ["Cargo desempeñado:", d.cargo, "Salario mensual:", d.salarioMensual],
+    ["Fecha de ingreso:", formatoFecha(d.ingreso), "Fecha de terminación:", formatoFecha(d.salida)],
+    [
+      "Antigüedad reconocida:",
+      `${d.antiguedad.anios} año(s), ${d.antiguedad.meses} mes(es) y ${d.antiguedad.dias} día(s)`,
+      "Causa de terminación:",
+      esDespido ? "Despido sin causa justificada" : "Renuncia voluntaria"
+    ],
     [""],
-    ["Concepto", "Monto (USD)"]
+    ["II. DESGLOSE DE PRESTACIONES LIQUIDADAS (DEVENGOS)"],
+    ["Concepto", "Base legal", "Monto (USD)"]
   ];
 
-  filasTabla.forEach((tr) => {
-    const celdas = tr.querySelectorAll("td");
-    if (celdas.length === 2) {
-      const concepto = celdas[0].textContent.trim();
-      // Limpiar el símbolo de dólar para exportar número real
-      const valorNum = parseFloat(celdas[1].textContent.replace(/[^0-9.-]+/g, "")) || 0;
-      datosExcel.push([concepto, valorNum]);
-    }
-  });
+  // Desglose de prestaciones devengadas
+  if (c.vacacionesCompletas > 0) {
+    datosExcel.push(["Vacaciones completas pendientes", "Arts. 177 y 187 CT", c.vacacionesCompletas]);
+  }
+  datosExcel.push(["Vacación proporcional", "Arts. 177 y 187 CT", c.vacacionesProporcionales]);
+  datosExcel.push(["Aguinaldo proporcional", "Arts. 196-198 CT", c.aguinaldo]);
+  datosExcel.push([
+    esDespido ? "Indemnización por despido injustificado" : d.etiquetaIndem,
+    baseIndem,
+    c.indemnizacion
+  ]);
+  datosExcel.push(["Horas extras diurnas", "Art. 169 CT", c.extrasDiurnas]);
+  datosExcel.push(["Horas extras nocturnas", "Arts. 168 y 169 CT", c.extrasNocturnas]);
+  datosExcel.push(["Días de asueto laborados", "Art. 192 CT", c.asueto]);
+  datosExcel.push(["Días de descanso semanal laborados", "Arts. 175 y 176 CT", c.descanso]);
+  datosExcel.push(["TOTAL DEVENGADO (BRUTO)", "", d.subtotal]);
+
+  // Sección de Deducciones y Base Gravada
+  datosExcel.push([""]);
+  datosExcel.push(["III. BASE GRAVADA, DEDUCCIONES DE LEY Y NETO A PAGAR"]);
+  datosExcel.push([`Remuneración gravada: $${d.baseGravada.toFixed(2)} | Monto exento: $${exento.toFixed(2)} (${textoExento})`]);
+  datosExcel.push(["Concepto", "Base legal", "Monto (USD)"]);
+  datosExcel.push(["Cotización ISSS (trabajador)", "Reglamento del ISSS, Art. 29", -d.descuentoISSS]);
+  datosExcel.push(["Cotización AFP (trabajador)", "Ley del Sistema de Ahorro para Pensiones", -d.descuentoAFP]);
+  datosExcel.push(["Retención de ISR", "Art. 37 Ley de ISR", -d.descuentoISR]);
+  datosExcel.push(["TOTAL DEDUCCIONES", "", -totalDeducciones]);
+  datosExcel.push(["MONTO NETO A PAGAR", "", d.totalLiquido]);
+
+  // Monto en letras
+  datosExcel.push([""]);
+  datosExcel.push(["Monto neto en letras:", numeroALetras(d.totalLiquido)]);
+
+  // Sección de firmas y constancia
+  datosExcel.push([""]);
+  datosExcel.push(["IV. CONSTANCIA DE RECIBIDO Y FIRMAS"]);
+  datosExcel.push([
+    `La persona trabajadora ${d.empleado.toUpperCase()} declara haber recibido el detalle de las prestaciones que anteceden.`
+  ]);
+  datosExcel.push([""]);
+  datosExcel.push(["Firma Trabajador: ______________________", "", "Firma Patrono / Representante: ______________________"]);
+  datosExcel.push(["Nombre:", d.empleado, "Nombre:", d.empresa]);
+  datosExcel.push(["DUI: __________________________________", "", "DUI: __________________________________"]);
+  datosExcel.push(["Fecha: ________________________________", "", "Fecha: ________________________________"]);
 
   const ws = XLSX.utils.aoa_to_sheet(datosExcel);
 
-  // Formato y anchos de columna
-  ws["!cols"] = [{ wch: 45 }, { wch: 18 }];
+  // Configuración de anchos de columna para que luzca ordenado y profesional
+  ws["!cols"] = [
+    { wch: 44 }, // Concepto / Etiquetas principales
+    { wch: 42 }, // Base legal / Datos secundarios
+    { wch: 20 }, // Monto en USD
+    { wch: 35 }  // Columna auxiliar para firmas y datos patrono
+  ];
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Liquidacion");
+  XLSX.utils.book_append_sheet(wb, ws, "Comprobante_Liquidacion");
 
-  const nombreArchivo = `Liquidacion_${empleado.replace(/\s+/g, "_") || "Calculo"}.xlsx`;
+  const nombreArchivo = `Liquidacion_${d.empleado.replace(/\s+/g, "_") || "Calculo"}.xlsx`;
   XLSX.writeFile(wb, nombreArchivo);
 }
 
