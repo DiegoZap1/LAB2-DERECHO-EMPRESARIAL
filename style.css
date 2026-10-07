@@ -383,3 +383,8 @@ footer p {
   color: #1e3a8a;
   text-align: right;
 }
+
+.check:has(input:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

@@ -32,6 +32,9 @@
           </div>
         </div>
 
+        <label for="cargoEmpleado">Cargo desempeñado (opcional)</label>
+        <input type="text" id="cargoEmpleado" placeholder="Ej.: Ingeniero de Software">
+
         <label for="ingreso">Ingreso mensual (USD)</label>
         <input type="number" id="ingreso" min="0.01" step="0.01" inputmode="decimal" required>
 
@@ -153,6 +156,7 @@
           </select>
           <fieldset id="seccionAsuetos" class="condicional lista-opciones" hidden>
             <legend>Seleccione los asuetos laborados</legend>
+            <p class="ayuda">Solo cuentan los asuetos del año de la fecha de salida que caen dentro del período laborado; los demás se bloquean solos.</p>
             <div class="opciones">
               <label class="check"><input type="checkbox" name="asueto" value="1 de enero">1 de enero</label>
               <label class="check"><input type="checkbox" name="asueto" value="Jueves Santo">Jueves Santo</label>
@@ -245,6 +249,7 @@
             <tr><td>Base gravada para deducciones</td><td id="rBaseGravada">$0.00</td></tr>
             <tr><td>Descuento ISSS (3%, máximo $30.00)</td><td id="rISSS">$0.00</td></tr>
             <tr><td>Descuento AFP (7.25%)</td><td id="rAFP">$0.00</td></tr>
+            <tr><td>Retención de ISR</td><td id="rISR">$0.00</td></tr>
             <tr class="total"><td>Total líquido a pagar</td><td id="rTotalLiquido">$0.00</td></tr>
           </tbody>
         </table>
