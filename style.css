@@ -318,3 +318,68 @@ footer p {
     scroll-behavior: auto !important;
   }
 }
+
+/* Botones de exportación */
+.botones-exportar {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.boton-pdf {
+  background: #dc2626;
+  color: #fff;
+  flex: 1;
+}
+
+.boton-pdf:hover {
+  background: #b91c1c;
+}
+
+.boton-excel {
+  background: #15803d;
+  color: #fff;
+  flex: 1;
+}
+
+.boton-excel:hover {
+  background: #166534;
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  header, form, footer, .botones-exportar {
+    display: none !important;
+  }
+  #resultados {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* Estilos para la cita legal del Art. 177 */
+.cita-articulo {
+  margin: 10px 0 16px;
+  padding: 12px 16px;
+  background-color: #f1f5f9;
+  border-left: 4px solid #1e3a8a;
+  border-radius: 4px;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.cita-articulo cite {
+  display: block;
+  margin-top: 6px;
+  font-weight: 700;
+  font-style: normal;
+  font-size: 0.85rem;
+  color: #1e3a8a;
+  text-align: right;
+}

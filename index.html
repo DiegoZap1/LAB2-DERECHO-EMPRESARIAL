@@ -7,6 +7,8 @@
   <title>Calculadora de Prestaciones Laborales - El Salvador</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
 </head>
 <body>
   <header>
@@ -73,6 +75,57 @@
             <option value="si">Sí</option>
             <option value="no">No</option>
           </select>
+        </div>
+      </fieldset>
+
+      <!-- Apartado: Estado de Vacaciones (Art. 177 Código de Trabajo) -->
+      <fieldset class="bloque-vacaciones-art177">
+        <legend>Estado de Vacaciones</legend>
+
+        <blockquote class="cita-articulo">
+          «Después de un año de trabajo continuo en la misma empresa o establecimiento o bajo la dependencia de un mismo patrono, los trabajadores tendrán derecho a un período de vacaciones cuya duración será de quince días, los cuales serán remunerados con una prestación equivalente al salario ordinario correspondiente a dicho lapso, más un 30% del mismo.»
+          <cite>— Art. 177, Código de Trabajo de El Salvador</cite>
+        </blockquote>
+
+        <div class="separador">
+          <label for="recibioVacaciones">¿Recibió vacaciones en el período correspondiente?</label>
+          <select id="recibioVacaciones" required>
+            <option value="">Seleccione Sí o No</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <!-- Contenedor condicional que se muestra al seleccionar Sí -->
+        <div id="seccionPeriodoVacaciones" class="condicional" hidden>
+          <p class="ayuda">Indique el período en que fueron gozadas las vacaciones:</p>
+          <div class="fila">
+            <div>
+              <label for="vacacionDesde">Desde (Fecha de inicio):</label>
+              <input type="date" id="vacacionDesde">
+            </div>
+            <div>
+              <label for="vacacionHasta">Hasta (Fecha de finalización):</label>
+              <input type="date" id="vacacionHasta">
+            </div>
+          </div>
+
+          <div class="separador">
+            <label>Prestaciones accesorias en especie (Art. 180 C.T.):</label>
+            <div class="opciones">
+              <label class="check" for="patronoAlimentacion">
+                <input type="checkbox" id="patronoAlimentacion">
+                El patrono proporciona alimentación
+              </label>
+              <label class="check" for="patronoAlojamiento">
+                <input type="checkbox" id="patronoAlojamiento">
+                El patrono proporciona alojamiento
+              </label>
+            </div>
+            <p class="ayuda">
+              * Conforme al Art. 180 C.T., si el trabajador recibe alimentación y/o habitación en especie, se adiciona el valor equivalente en dinero (mínimo 25% del salario ordinario por cada una) al calcular la prestación.
+            </p>
+          </div>
         </div>
       </fieldset>
 
@@ -195,6 +248,11 @@
             <tr class="total"><td>Total líquido a pagar</td><td id="rTotalLiquido">$0.00</td></tr>
           </tbody>
         </table>
+      </div>
+      <!-- Botones de Exportación -->
+      <div class="botones-exportar">
+        <button type="button" id="btnExportarPDF" class="boton-pdf">📄 Descargar PDF</button>
+        <button type="button" id="btnExportarExcel" class="boton-excel">📊 Descargar Excel (.xlsx)</button>
       </div>
       <p id="nota" class="nota"></p>
     </section>

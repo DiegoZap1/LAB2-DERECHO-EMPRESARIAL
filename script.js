@@ -128,6 +128,18 @@ function actualizarVisibilidad() {
   $("fechaUltimasVacaciones").disabled = $("nuncaVacaciones").checked;
   if ($("nuncaVacaciones").checked) $("fechaUltimasVacaciones").value = "";
   actualizarLimitesJornadas();
+
+  // Mostrar u ocultar bloque de fechas y prestaciones en especie según si recibió vacaciones
+  const recibioVac = $("recibioVacaciones").value === "si";
+  $("seccionPeriodoVacaciones").hidden = !recibioVac;
+
+  if (!recibioVac) {
+    $("vacacionDesde").value = "";
+    $("vacacionHasta").value = "";
+    $("patronoAlimentacion").checked = false;
+    $("patronoAlojamiento").checked = false;
+  }
+  $("recibioVacaciones").addEventListener("change", actualizarVisibilidad);
 }
 
 function actualizarLimitesJornadas() {
@@ -472,6 +484,14 @@ function calcular() {
     if (error instanceof Error) mostrarError(error.message);
     else throw error;
   }
+
+  // Factor de prestaciones accesorias (Art. 180 C.T.)
+  let factorAlimentacionAlojamiento = 1.0;
+  if ($("patronoAlimentacion").checked) factorAlimentacionAlojamiento += 0.25; // +25%
+  if ($("patronoAlojamiento").checked) factorAlimentacionAlojamiento += 0.25;  // +25%
+
+  // Valor del período anual ajustado (Salario de 15 días + 30% legal + recargos en especie si aplican)
+  const valorVacacionAnual = (salarioDiario * 15 * 1.30) * factorAlimentacionAlojamiento;
 }
 
 formulario.addEventListener("submit", (evento) => {
@@ -507,3 +527,92 @@ $("btnLimpiar").addEventListener("click", () => {
 });
 
 actualizarVisibilidad();
+
+
+// ==========================================
+// EXPORTACIÓN A EXCEL (.xlsx) Y PDF
+// ==========================================
+
+function exportarAExcel() {
+  if (typeof XLSX === "undefined") {
+    alert("La librería de Excel aún no ha cargado. Revisa tu conexión a internet.");
+    return;
+  }
+
+  const empleado = $("rEmpleado").textContent;
+  const empresa = $("rEmpresa").textContent;
+  const periodo = $("rPeriodo").textContent;
+  const antiguedad = $("rAntiguedad").textContent;
+
+  // Extraer las filas de la tabla de resultados
+  const filasTabla = document.querySelectorAll("#resultados table tbody tr");
+  const datosExcel = [
+    ["LIQUIDACIÓN Y PRESTACIONES LABORALES - EL SALVADOR"],
+    [""],
+    ["Empleado:", empleado],
+    ["Empresa:", empresa],
+    ["Período laborado:", periodo],
+    ["Antigüedad:", antiguedad],
+    [""],
+    ["Concepto", "Monto (USD)"]
+  ];
+
+  filasTabla.forEach((tr) => {
+    const celdas = tr.querySelectorAll("td");
+    if (celdas.length === 2) {
+      const concepto = celdas[0].textContent.trim();
+      // Limpiar el símbolo de dólar para exportar número real
+      const valorNum = parseFloat(celdas[1].textContent.replace(/[^0-9.-]+/g, "")) || 0;
+      datosExcel.push([concepto, valorNum]);
+    }
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(datosExcel);
+
+  // Formato y anchos de columna
+  ws["!cols"] = [{ wch: 45 }, { wch: 18 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Liquidacion");
+
+  const nombreArchivo = `Liquidacion_${empleado.replace(/\s+/g, "_") || "Calculo"}.xlsx`;
+  XLSX.writeFile(wb, nombreArchivo);
+}
+
+function exportarAPDF() {
+  if (typeof html2pdf === "undefined") {
+    // Si no está disponible la librería, recurre al diálogo nativo de impresión
+    window.print();
+    return;
+  }
+
+  const elemento = $("resultados");
+  const empleado = $("rEmpleado").textContent || "Empleado";
+
+  // Ocultar temporalmente los botones de exportación para que no salgan en el PDF
+  const contenedorBotones = document.querySelector(".botones-exportar");
+  if (contenedorBotones) contenedorBotones.style.display = "none";
+
+  const opciones = {
+    margin: [10, 10, 10, 10],
+    filename: `Liquidacion_${empleado.replace(/\s+/g, "_")}.pdf`,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: "mm", format: "letter", orientation: "portrait" }
+  };
+
+  html2pdf()
+    .set(opciones)
+    .from(elemento)
+    .save()
+    .then(() => {
+      if (contenedorBotones) contenedorBotones.style.display = "flex";
+    });
+}
+
+// Escuchadores de eventos para los botones
+const btnPdf = $("btnExportarPDF");
+const btnExcel = $("btnExportarExcel");
+
+if (btnPdf) btnPdf.addEventListener("click", exportarAPDF);
+if (btnExcel) btnExcel.addEventListener("click", exportarAExcel);
