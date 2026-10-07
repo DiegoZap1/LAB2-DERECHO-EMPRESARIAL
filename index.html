@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calculadora referencial de prestaciones laborales en El Salvador.">
   <title>Calculadora de Prestaciones Laborales - El Salvador</title>
   <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
   <header>
@@ -14,23 +16,22 @@
 
   <main>
     <form id="formulario" novalidate>
-
       <fieldset>
-        <legend>1. Datos financieros y antigüedad</legend>
+        <legend>1. Datos financieros, antigüedad y vacaciones</legend>
 
         <div class="fila">
           <div>
-            <label for="nombreEmpleado">Nombre del empleado</label>
-            <input type="text" id="nombreEmpleado" placeholder="Ej: Roberto Herrera">
+            <label for="nombreEmpleado">Nombre del empleado (opcional)</label>
+            <input type="text" id="nombreEmpleado" autocomplete="name" placeholder="Ej.: Roberto Herrera">
           </div>
           <div>
-            <label for="nombreEmpresa">Nombre de la empresa</label>
-            <input type="text" id="nombreEmpresa" placeholder="Ej: Orion Software">
+            <label for="nombreEmpresa">Nombre de la empresa (opcional)</label>
+            <input type="text" id="nombreEmpresa" placeholder="Ej.: Orion Software">
           </div>
         </div>
 
         <label for="ingreso">Ingreso mensual (USD)</label>
-        <input type="number" id="ingreso" min="0" step="0.01" placeholder="Ej: 600.00" required>
+        <input type="number" id="ingreso" min="0.01" step="0.01" inputmode="decimal" required>
 
         <div class="fila">
           <div>
@@ -38,11 +39,21 @@
             <input type="date" id="fechaIngreso" required>
           </div>
           <div>
-            <label for="fechaFin">Último día laborado</label>
+            <label for="fechaFin">Fecha de salida / último día laborado</label>
             <input type="date" id="fechaFin" required>
           </div>
         </div>
-        <p class="ayuda">La antigüedad se calcula con las fechas exactas (mes comercial de 30 días, el último día laborado cuenta).</p>
+        <p class="ayuda">La antigüedad se calcula a partir de las fechas; el último día laborado cuenta.</p>
+
+        <div class="separador">
+          <label for="fechaUltimasVacaciones">¿Cuándo inició su último período de vacaciones gozadas/pagadas?</label>
+          <input type="date" id="fechaUltimasVacaciones">
+          <label class="check" for="nuncaVacaciones">
+            <input type="checkbox" id="nuncaVacaciones">
+            Nunca he tomado vacaciones gozadas ni pagadas
+          </label>
+          <p class="ayuda">Marque la opción si no ha gozado ni recibido pago de vacaciones desde que ingresó.</p>
+        </div>
       </fieldset>
 
       <fieldset>
@@ -50,80 +61,147 @@
 
         <label for="tipoCierre">Tipo de cierre</label>
         <select id="tipoCierre" required>
-          <option value="">-- Selecciona una opción --</option>
+          <option value="">Seleccione una opción</option>
           <option value="despido">Despido injustificado</option>
           <option value="renuncia">Renuncia voluntaria</option>
         </select>
+
+        <div id="preguntaPreaviso" class="condicional" hidden>
+          <label for="preaviso">¿Informó al patrono con preaviso por escrito?</label>
+          <select id="preaviso">
+            <option value="">Seleccione Sí o No</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+        </div>
       </fieldset>
 
       <fieldset>
-        <legend>3. Jornadas extraordinarias y días especiales</legend>
+        <legend>3. Horas extras y días especiales</legend>
 
-        <label class="check">
-          <input type="checkbox" id="noAplica">
-          No aplica (no trabajé horas extras ni días especiales)
-        </label>
+        <label for="tieneHorasExtra">¿Tiene horas extras no pagadas?</label>
+        <select id="tieneHorasExtra" required>
+          <option value="">Seleccione Sí o No</option>
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
+        <div id="seccionHorasExtra" class="condicional" hidden>
+          <p class="ayuda">Registre cada tramo que ya corresponde íntegramente a horas extra. Si termina al día siguiente, indique la fecha de inicio y la hora de fin.</p>
+          <div id="jornadasExtras"></div>
+          <button type="button" id="agregarJornada" class="boton-secundario">Agregar jornada</button>
+        </div>
 
-        <div id="camposExtras">
-          <div class="fila">
-            <div>
-              <label for="hExtraDiurnas">Horas extras diurnas</label>
-              <input type="number" id="hExtraDiurnas" min="0" step="0.5" value="0">
+        <div class="separador">
+          <label for="laboroAsueto">¿Laboró en días de asueto nacional?</label>
+          <select id="laboroAsueto" required>
+            <option value="">Seleccione Sí o No</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+          <fieldset id="seccionAsuetos" class="condicional lista-opciones" hidden>
+            <legend>Seleccione los asuetos laborados</legend>
+            <div class="opciones">
+              <label class="check"><input type="checkbox" name="asueto" value="1 de enero">1 de enero</label>
+              <label class="check"><input type="checkbox" name="asueto" value="Jueves Santo">Jueves Santo</label>
+              <label class="check"><input type="checkbox" name="asueto" value="Viernes Santo">Viernes Santo</label>
+              <label class="check"><input type="checkbox" name="asueto" value="Sábado Santo">Sábado Santo</label>
+              <label class="check"><input type="checkbox" name="asueto" value="1 de mayo">1 de mayo</label>
+              <label class="check"><input type="checkbox" name="asueto" value="10 de mayo">10 de mayo</label>
+              <label class="check"><input type="checkbox" name="asueto" value="17 de junio">17 de junio</label>
+              <label class="check"><input type="checkbox" name="asueto" value="3 de agosto">3 de agosto</label>
+              <label class="check"><input type="checkbox" name="asueto" value="5 de agosto">5 de agosto</label>
+              <label class="check"><input type="checkbox" name="asueto" value="6 de agosto">6 de agosto</label>
+              <label class="check"><input type="checkbox" name="asueto" value="15 de septiembre">15 de septiembre</label>
+              <label class="check"><input type="checkbox" name="asueto" value="2 de noviembre">2 de noviembre</label>
+              <label class="check"><input type="checkbox" name="asueto" value="25 de diciembre">25 de diciembre</label>
             </div>
-            <div>
-              <label for="hExtraNocturnas">Horas extras nocturnas (7:00 p.m. a 6:00 a.m.)</label>
-              <input type="number" id="hExtraNocturnas" min="0" step="0.5" value="0">
-            </div>
-          </div>
-          <div class="fila">
-            <div>
-              <label for="diasAsueto">Días de asueto laborados</label>
-              <input type="number" id="diasAsueto" min="0" step="1" value="0">
-            </div>
-            <div>
-              <label for="diasDescanso">Días de descanso semanal laborados</label>
-              <input type="number" id="diasDescanso" min="0" step="1" value="0">
-            </div>
+          </fieldset>
+        </div>
+
+        <div class="separador">
+          <label for="laboroDescanso">¿Laboró en días de descanso semanal obligatorio?</label>
+          <select id="laboroDescanso" required>
+            <option value="">Seleccione Sí o No</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+          <div id="seccionDescanso" class="condicional" hidden>
+            <label for="diasDescanso">Cantidad de días de descanso semanal laborados</label>
+            <input type="number" id="diasDescanso" min="1" step="1" inputmode="numeric">
           </div>
         </div>
       </fieldset>
 
-      <div id="mensajeError" class="error" hidden></div>
+      <fieldset>
+        <legend>4. Deducciones de ley</legend>
+        <label class="check" for="aguinaldoGravado">
+          <input type="checkbox" id="aguinaldoGravado">
+          Incluir el aguinaldo en la base de descuentos ISSS y AFP
+        </label>
+        <p class="ayuda">Marque esta opción solo si corresponde aplicar gravamen al aguinaldo. Las deducciones se calculan sobre los conceptos gravados indicados en el desglose.</p>
+      </fieldset>
+
+      <div id="mensajeError" class="error" role="alert" aria-live="assertive" hidden></div>
 
       <div class="botones">
         <button type="submit" id="btnCalcular">Calcular liquidación</button>
-        <button type="button" id="btnLimpiar" class="secundario">Limpiar</button>
+        <button type="button" id="btnLimpiar" class="boton-secundario">Limpiar</button>
       </div>
     </form>
 
-    <section id="resultados" hidden>
-      <h2>Desglose de la liquidación</h2>
+    <template id="plantillaJornada">
+      <div class="jornada-extra">
+        <div class="fila">
+          <div>
+            <label class="etiqueta-fecha-jornada">Fecha de la jornada extra</label>
+            <input type="date" class="fecha-jornada">
+          </div>
+          <div>
+            <label class="etiqueta-inicio-jornada">Hora de inicio</label>
+            <input type="time" class="inicio-jornada">
+          </div>
+          <div>
+            <label class="etiqueta-fin-jornada">Hora de fin</label>
+            <input type="time" class="fin-jornada">
+          </div>
+        </div>
+        <button type="button" class="quitar-jornada">Quitar jornada</button>
+      </div>
+    </template>
+
+    <section id="resultados" aria-labelledby="tituloResultados" hidden>
+      <h2 id="tituloResultados">Desglose de la liquidación</h2>
       <div class="resumen">
         <p><strong>Empleado:</strong> <span id="rEmpleado"></span></p>
         <p><strong>Empresa:</strong> <span id="rEmpresa"></span></p>
         <p><strong>Período:</strong> <span id="rPeriodo"></span></p>
         <p><strong>Antigüedad:</strong> <span id="rAntiguedad"></span></p>
       </div>
-      <table>
-        <tbody>
-          <tr><td>Vacación proporcional acumulada</td><td id="rVacacion">$0.00</td></tr>
-          <tr><td>Aguinaldo proporcional acumulado</td><td id="rAguinaldo">$0.00</td></tr>
-          <tr><td id="etiquetaIndem">Indemnización / compensación económica</td><td id="rIndem">$0.00</td></tr>
-          <tr><td>Subtotal horas extras diurnas</td><td id="rHED">$0.00</td></tr>
-          <tr><td>Subtotal horas extras nocturnas</td><td id="rHEN">$0.00</td></tr>
-          <tr><td>Días de asueto laborados</td><td id="rAsueto">$0.00</td></tr>
-          <tr><td>Días de descanso semanal laborados</td><td id="rDescanso">$0.00</td></tr>
-          <tr class="total"><td>TOTAL DE LA LIQUIDACIÓN</td><td id="rTotal">$0.00</td></tr>
-        </tbody>
-      </table>
+      <div class="tabla-contenedor">
+        <table>
+          <tbody>
+            <tr><td>Vacaciones completas pendientes</td><td id="rVacacionesCompletas">$0.00</td></tr>
+            <tr><td>Vacaciones proporcionales</td><td id="rVacacionesProporcionales">$0.00</td></tr>
+            <tr><td>Aguinaldo (completo o proporcional)</td><td id="rAguinaldo">$0.00</td></tr>
+            <tr><td id="etiquetaIndem">Indemnización / compensación económica</td><td id="rIndem">$0.00</td></tr>
+            <tr><td>Subtotal horas extras diurnas</td><td id="rHED">$0.00</td></tr>
+            <tr><td>Subtotal horas extras nocturnas</td><td id="rHEN">$0.00</td></tr>
+            <tr><td>Asuetos nacionales laborados</td><td id="rAsueto">$0.00</td></tr>
+            <tr><td>Días de descanso semanal laborados</td><td id="rDescanso">$0.00</td></tr>
+            <tr class="subtotal"><td>Subtotal de prestaciones</td><td id="rSubtotal">$0.00</td></tr>
+            <tr><td>Base gravada para deducciones</td><td id="rBaseGravada">$0.00</td></tr>
+            <tr><td>Descuento ISSS (3%, máximo $30.00)</td><td id="rISSS">$0.00</td></tr>
+            <tr><td>Descuento AFP (7.25%)</td><td id="rAFP">$0.00</td></tr>
+            <tr class="total"><td>Total líquido a pagar</td><td id="rTotalLiquido">$0.00</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p id="nota" class="nota"></p>
     </section>
   </main>
 
   <footer>
-    <p>Cálculo referencial basado en el Código de Trabajo de El Salvador y la Ley Reguladora de la Prestación Económica por Renuncia Voluntaria. 2026</p>
+    <p>Cálculo referencial. Verifique los supuestos y montos legales vigentes con la autoridad competente o un profesional.</p>
   </footer>
-
-  <script src="script.js"></script>
 </body>
 </html>
